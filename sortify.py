@@ -1,387 +1,265 @@
 import pygame
 import random
 import math
+import time
 
-# Initialize Pygame modules
 pygame.init()
 
-
+# Visualization class
 class VisualizationSettings:
-    # Color constants (RGB)
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
     GREEN = (0, 255, 0)
     RED = (255, 0, 0)
-    BACKGROUND_COLOR = WHITE
-
-    # Gradient colors for array bars
-    COLOR_GRADIENTS = [
-        (128, 128, 128),
-        (160, 160, 160),
-        (192, 192, 192)
-    ]
-
-    # Fonts for text rendering
-    FONT = pygame.font.SysFont('comicsans', 30)
-    LARGE_FONT = pygame.font.SysFont('comicsans', 40)
-
-    # UI padding constants
+    BLUE = (0, 100, 255)
+    GRAY = (200, 200, 200)
+    FONT = pygame.font.SysFont('comicsans', 18)
+    SMALL_FONT = pygame.font.SysFont('comicsans', 14)
+    LARGE_FONT = pygame.font.SysFont('comicsans', 36)
     SIDE_PADDING = 100
     TOP_PADDING = 150
 
     def __init__(self, width, height, array):
-        """
-        Initialize visualization settings with window size and array.
-        Calculate block size based on array length and value range.
-        """
         self.width = width
         self.height = height
-
-        # Create Pygame display window
         self.window = pygame.display.set_mode((width, height))
-        pygame.display.set_caption("Sortify - Sorting Algorithm Visualization")
-
-        # Setup array and derived properties
+        pygame.display.set_caption("Sortify - Sorting Algorithm Visualizer")
         self.set_array(array)
 
     def set_array(self, array):
-        """
-        Set the array to visualize and calculate scaling factors.
-        """
         self.array = array
-        self.min_value = min(array)
-        self.max_value = max(array)
-
-        # Calculate width of each block to fit in window with side padding
+        self.min_val = min(array)
+        self.max_val = max(array)
         self.block_width = round((self.width - self.SIDE_PADDING) / len(array))
-
-        # Calculate height scaling for blocks relative to max and min values
-        self.block_height = math.floor((self.height - self.TOP_PADDING) / (self.max_value - self.min_value))
-
-        # Starting x coordinate for drawing the first block
+        self.block_height = math.floor((self.height - self.TOP_PADDING) / (self.max_val - self.min_val))
         self.start_x = self.SIDE_PADDING // 2
 
+# Draw screen and UI
+def draw_screen(vis, algo_name, ascending, result_text):
+    vis.window.fill(vis.WHITE)
+    title = vis.LARGE_FONT.render(f"{algo_name} - {'Ascending' if ascending else 'Descending'}", 1, vis.GREEN)
+    vis.window.blit(title, (vis.width / 2 - title.get_width() / 2, 5))
 
-def draw_screen(vis_settings, algorithm_name, ascending):
-    """
-    Draw the entire screen including titles, controls, and the array visualization.
-    """
-    # Fill background
-    vis_settings.window.fill(vis_settings.BACKGROUND_COLOR)
+    controls = vis.FONT.render("R - Reset | SPACE - Start | A/D - Asc/Desc", 1, vis.BLACK)
+    vis.window.blit(controls, (vis.width / 2 - controls.get_width() / 2, 45))
 
-    # Render and draw title text
-    title = vis_settings.LARGE_FONT.render(
-        f"{algorithm_name} - {'Ascending' if ascending else 'Descending'}", 1, vis_settings.GREEN)
-    vis_settings.window.blit(title, (vis_settings.width / 2 - title.get_width() / 2, 5))
+    algos = vis.FONT.render("I - Insertion | B - Bubble | S - Selection | M - Merge | Q - Quick", 1, vis.BLACK)
+    vis.window.blit(algos, (vis.width / 2 - algos.get_width() / 2, 75))
 
-    # Render and draw controls text
-    controls = vis_settings.FONT.render(
-        "R - Reset | SPACE - Start Sorting | A - Ascending | D - Descending", 1, vis_settings.BLACK)
-    vis_settings.window.blit(controls, (vis_settings.width / 2 - controls.get_width() / 2, 45))
+    if result_text:
+        result = vis.FONT.render(result_text, 1, vis.BLUE)
+        vis.window.blit(result, (vis.width / 2 - result.get_width() / 2, 105))
 
-    # Render and draw algorithm selection info
-    algo_info = vis_settings.FONT.render(
-        "I - Insertion | B - Bubble | S - Selection | Q - Quick | M - Merge", 1, vis_settings.BLACK)
-    vis_settings.window.blit(algo_info, (vis_settings.width / 2 - algo_info.get_width() / 2, 75))
-
-    # Draw the array blocks
-    draw_array(vis_settings)
-
-    # Update the display
+    draw_array(vis)
     pygame.display.update()
 
-
-def draw_array(vis_settings, color_positions={}, clear_bg=False):
-    """
-    Draw the array as vertical bars.
-    Optionally highlights certain bars with specified colors.
-    """
-    array = vis_settings.array
-
-    # Clear only the area where array is drawn for smooth animation
+# Draw array bars
+def draw_array(vis, color_positions={}, clear_bg=False):
+    array = vis.array
     if clear_bg:
-        clear_rect = (vis_settings.SIDE_PADDING // 2, vis_settings.TOP_PADDING,
-                      vis_settings.width - vis_settings.SIDE_PADDING, vis_settings.height - vis_settings.TOP_PADDING)
-        pygame.draw.rect(vis_settings.window, vis_settings.BACKGROUND_COLOR, clear_rect)
+        clear_rect = (vis.SIDE_PADDING // 2, vis.TOP_PADDING, vis.width - vis.SIDE_PADDING, vis.height - vis.TOP_PADDING)
+        pygame.draw.rect(vis.window, vis.WHITE, clear_rect)
 
-    # Draw each block representing an element in the array
     for i, val in enumerate(array):
-        x = vis_settings.start_x + i * vis_settings.block_width
-        y = vis_settings.height - (val - vis_settings.min_value) * vis_settings.block_height
-
-        # Default color cycling through gradients for visual appeal
-        color = vis_settings.COLOR_GRADIENTS[i % 3]
-
-        # Override color if specified (e.g., for elements being compared or swapped)
+        x = vis.start_x + i * vis.block_width
+        y = vis.height - (val - vis.min_val) * vis.block_height
+        color = (100, 100, 255)
         if i in color_positions:
             color = color_positions[i]
+        pygame.draw.rect(vis.window, color, (x, y, vis.block_width, vis.height))
 
-        # Draw the rectangle (bar) for the array element
-        pygame.draw.rect(vis_settings.window, color, (x, y, vis_settings.block_width, vis_settings.height))
+        # Only draw value if block width is wide enough
+        if vis.block_width > 20:
+            label = vis.SMALL_FONT.render(str(val), 1, vis.BLACK)
+            vis.window.blit(label, (x + vis.block_width//2 - label.get_width()//2, y - 20))
 
     if clear_bg:
         pygame.display.update()
 
-
-def generate_random_array(size, min_value, max_value):
-    """
-    Generate a random array of specified size and value range.
-    """
-    return [random.randint(min_value, max_value) for _ in range(size)]
-
-
-def bubble_sort(vis_settings, ascending=True):
-    """
-    Generator function to perform bubble sort and visualize each swap.
-    Yields control after each significant operation to allow animation.
-    """
-    array = vis_settings.array
-    n = len(array)
-
-    for i in range(n - 1):
-        for j in range(n - 1 - i):
-            if (array[j] > array[j + 1] and ascending) or (array[j] < array[j + 1] and not ascending):
-                array[j], array[j + 1] = array[j + 1], array[j]
-                # Highlight swapped elements
-                draw_array(vis_settings, {j: vis_settings.GREEN, j + 1: vis_settings.RED}, True)
-                yield True  # Yield after each swap for animation
-    yield False  # Sorting finished
-
-
-def insertion_sort(vis_settings, ascending=True):
-    """
-    Generator function to perform insertion sort with visualization.
-    """
-    array = vis_settings.array
-    n = len(array)
-
-    for i in range(1, n):
-        current = array[i]
-        j = i
-        while j > 0 and ((array[j - 1] > current and ascending) or (array[j - 1] < current and not ascending)):
-            array[j] = array[j - 1]
-            j -= 1
-            array[j] = current
-            # Highlight compared/swapped elements
-            draw_array(vis_settings, {j: vis_settings.GREEN, j + 1: vis_settings.RED}, True)
-            yield True
-    yield False
-
-
-def selection_sort(vis_settings, ascending=True):
-    """
-    Generator function to perform selection sort with visualization.
-    """
-    array = vis_settings.array
-    n = len(array)
-
-    for i in range(n):
-        selected_index = i
-        for j in range(i + 1, n):
-            if (array[j] < array[selected_index] and ascending) or (array[j] > array[selected_index] and not ascending):
-                selected_index = j
-            draw_array(vis_settings, {selected_index: vis_settings.RED, j: vis_settings.GREEN}, True)
-            yield True
-        # Swap the found minimum/maximum with current position
-        array[i], array[selected_index] = array[selected_index], array[i]
-        draw_array(vis_settings, {i: vis_settings.GREEN, selected_index: vis_settings.RED}, True)
-        yield True
-    yield False
-
-
-def quick_sort(vis_settings, ascending=True):
-    """
-    Generator function to perform quick sort with visualization.
-    Uses recursive helper functions implemented as generators.
-    """
-
-    array = vis_settings.array
-
-    def partition(start, end):
-        """
-        Partition the array segment and visualize swaps.
-        """
-        pivot = array[end]
-        i = start - 1
-        for j in range(start, end):
-            if (array[j] <= pivot and ascending) or (array[j] >= pivot and not ascending):
-                i += 1
-                array[i], array[j] = array[j], array[i]
-                draw_array(vis_settings, {i: vis_settings.GREEN, j: vis_settings.RED}, True)
+# Sorting algorithms with yield
+def bubble_sort(vis, asc=True):
+    arr = vis.array
+    for i in range(len(arr) - 1):
+        for j in range(len(arr) - 1 - i):
+            if (arr[j] > arr[j + 1] and asc) or (arr[j] < arr[j + 1] and not asc):
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+                draw_array(vis, {j: vis.GREEN, j + 1: vis.RED}, True)
                 yield True
-        array[i + 1], array[end] = array[end], array[i + 1]
-        draw_array(vis_settings, {i + 1: vis_settings.GREEN, end: vis_settings.RED}, True)
+    yield False
+
+def insertion_sort(vis, asc=True):
+    arr = vis.array
+    for i in range(1, len(arr)):
+        key = arr[i]
+        j = i - 1
+        while j >= 0 and ((arr[j] > key and asc) or (arr[j] < key and not asc)):
+            arr[j + 1] = arr[j]
+            j -= 1
+            draw_array(vis, {j: vis.RED, j + 1: vis.GREEN}, True)
+            yield True
+        arr[j + 1] = key
         yield True
-        return i + 1
-
-    def quick_sort_recursive(start, end):
-        """
-        Recursive quick sort implementation using generators.
-        """
-        if start < end:
-            partition_gen = partition(start, end)
-            while True:
-                try:
-                    yield next(partition_gen)
-                except StopIteration as e:
-                    pivot_index = e.value
-                    break
-            yield from quick_sort_recursive(start, pivot_index - 1)
-            yield from quick_sort_recursive(pivot_index + 1, end)
-
-    yield from quick_sort_recursive(0, len(array) - 1)
     yield False
 
-
-def merge_sort(vis_settings, ascending=True):
-    """
-    Generator function to perform merge sort with visualization.
-    Uses recursive helper functions implemented as generators.
-    """
-
-    array = vis_settings.array
-
-    def merge(start, mid, end):
-        """
-        Merge two sorted halves of the array segment and visualize.
-        """
-        merged = []
-        left_idx = start
-        right_idx = mid + 1
-
-        # Merge elements while visualizing comparisons
-        while left_idx <= mid and right_idx <= end:
-            if (array[left_idx] <= array[right_idx] and ascending) or (array[left_idx] >= array[right_idx] and not ascending):
-                merged.append(array[left_idx])
-                left_idx += 1
-            else:
-                merged.append(array[right_idx])
-                right_idx += 1
-            draw_array(vis_settings, {left_idx-1: vis_settings.GREEN, right_idx-1: vis_settings.RED}, True)
+def selection_sort(vis, asc=True):
+    arr = vis.array
+    for i in range(len(arr)):
+        min_idx = i
+        for j in range(i + 1, len(arr)):
+            if (arr[j] < arr[min_idx] and asc) or (arr[j] > arr[min_idx] and not asc):
+                min_idx = j
+            draw_array(vis, {min_idx: vis.RED, j: vis.GREEN}, True)
             yield True
-
-        # Append remaining elements from left half
-        while left_idx <= mid:
-            merged.append(array[left_idx])
-            left_idx += 1
-            draw_array(vis_settings, {left_idx-1: vis_settings.GREEN}, True)
-            yield True
-
-        # Append remaining elements from right half
-        while right_idx <= end:
-            merged.append(array[right_idx])
-            right_idx += 1
-            draw_array(vis_settings, {right_idx-1: vis_settings.RED}, True)
-            yield True
-
-        # Write back merged array to the original array and visualize
-        for i, val in enumerate(merged):
-            array[start + i] = val
-            draw_array(vis_settings, {start + i: vis_settings.GREEN}, True)
-            yield True
-
-    def merge_sort_recursive(start, end):
-        """
-        Recursive merge sort implementation using generators.
-        """
-        if start < end:
-            mid = (start + end) // 2
-            yield from merge_sort_recursive(start, mid)
-            yield from merge_sort_recursive(mid + 1, end)
-            yield from merge(start, mid, end)
-
-    yield from merge_sort_recursive(0, len(array) - 1)
+        arr[i], arr[min_idx] = arr[min_idx], arr[i]
+        yield True
     yield False
 
+def merge_sort(vis, asc=True):
+    arr = vis.array
+    yield from _merge_sort(arr, 0, len(arr) - 1, vis, asc)
+    yield False
 
+def _merge_sort(arr, l, r, vis, asc):
+    if l < r:
+        m = (l + r) // 2
+        yield from _merge_sort(arr, l, m, vis, asc)
+        yield from _merge_sort(arr, m + 1, r, vis, asc)
+        yield from merge(arr, l, m, r, vis, asc)
+
+def merge(arr, l, m, r, vis, asc):
+    L = arr[l:m + 1]
+    R = arr[m + 1:r + 1]
+    i = j = 0
+    k = l
+    while i < len(L) and j < len(R):
+        if (L[i] <= R[j] and asc) or (L[i] >= R[j] and not asc):
+            arr[k] = L[i]
+            i += 1
+        else:
+            arr[k] = R[j]
+            j += 1
+        draw_array(vis, {k: vis.GREEN}, True)
+        yield True
+        k += 1
+    while i < len(L):
+        arr[k] = L[i]
+        i += 1
+        draw_array(vis, {k: vis.RED}, True)
+        yield True
+        k += 1
+    while j < len(R):
+        arr[k] = R[j]
+        j += 1
+        draw_array(vis, {k: vis.RED}, True)
+        yield True
+        k += 1
+
+def quick_sort(vis, asc=True):
+    arr = vis.array
+    yield from _quick_sort(arr, 0, len(arr) - 1, vis, asc)
+    yield False
+
+def _quick_sort(arr, low, high, vis, asc):
+    if low < high:
+        pi = yield from partition(arr, low, high, vis, asc)
+        yield from _quick_sort(arr, low, pi - 1, vis, asc)
+        yield from _quick_sort(arr, pi + 1, high, vis, asc)
+
+def partition(arr, low, high, vis, asc):
+    pivot = arr[high]
+    i = low - 1
+    for j in range(low, high):
+        if (arr[j] <= pivot and asc) or (arr[j] >= pivot and not asc):
+            i += 1
+            arr[i], arr[j] = arr[j], arr[i]
+        draw_array(vis, {j: vis.RED, high: vis.GREEN}, True)
+        yield True
+    arr[i + 1], arr[high] = arr[high], arr[i + 1]
+    yield True
+    return i + 1
+
+# Main app
 def main():
-    """
-    Main function to run the sorting visualization application.
-    Handles user input, sorting control, and rendering.
-    """
-    running = True
-
-    # Initial configuration
-    width = 900
-    height = 600
-    array_size = 50
-    min_val = 1
-    max_val = 100
-
-    # Generate initial random array and setup visualization
-    array = generate_random_array(array_size, min_val, max_val)
-    vis_settings = VisualizationSettings(width, height, array)
+    WIDTH, HEIGHT = 900, 600
+    SIZE = 30  # Reduce size to prevent overlap
+    array = [random.randint(1, 100) for _ in range(SIZE)]
+    vis = VisualizationSettings(WIDTH, HEIGHT, array)
 
     sorting = False
     ascending = True
-    sorting_algorithm = bubble_sort
-    algorithm_name = "Bubble Sort"
-    sorting_generator = None
+    sort_algo = bubble_sort
+    algo_name = "Bubble Sort"
+    sort_gen = None
+    result_text = ""
+    start_time = None
 
+    complexities = {
+        "Bubble Sort": ("O(n²)", "O(1)"),
+        "Insertion Sort": ("O(n²)", "O(1)"),
+        "Selection Sort": ("O(n²)", "O(1)"),
+        "Merge Sort": ("O(n log n)", "O(n)"),
+        "Quick Sort": ("O(n log n)", "O(log n)")
+    }
+
+    run = True
     clock = pygame.time.Clock()
 
-    while running:
-        clock.tick(60)  # Limit to 60 FPS
+    while run:
+        clock.tick(60)
 
         if sorting:
+            if start_time is None:
+                start_time = time.time()
             try:
-                # Perform next step of sorting
-                next(sorting_generator)
+                next(sort_gen)
             except StopIteration:
-                # Sorting finished
+                elapsed = round(time.time() - start_time, 3)
+                t_c, s_c = complexities[algo_name]
+                result_text = f"⏱ Time: {elapsed}s | ⌛ Time: {t_c} | 📦 Space: {s_c}"
                 sorting = False
+                start_time = None
+
         else:
-            # Draw screen normally if not sorting
-            draw_screen(vis_settings, algorithm_name, ascending)
+            draw_screen(vis, algo_name, ascending, result_text)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                run = False
 
-            # Keyboard controls
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
-                    # Reset array and visualization
-                    array = generate_random_array(array_size, min_val, max_val)
-                    vis_settings.set_array(array)
+                    array = [random.randint(1, 100) for _ in range(SIZE)]
+                    vis.set_array(array)
+                    result_text = ""
                     sorting = False
 
                 elif event.key == pygame.K_SPACE and not sorting:
-                    # Start sorting
                     sorting = True
-                    sorting_generator = sorting_algorithm(vis_settings, ascending)
+                    sort_gen = sort_algo(vis, ascending)
 
                 elif event.key == pygame.K_a and not sorting:
-                    # Set ascending order
                     ascending = True
-
                 elif event.key == pygame.K_d and not sorting:
-                    # Set descending order
                     ascending = False
 
-                # Select sorting algorithm by key
                 elif not sorting:
                     if event.key == pygame.K_b:
-                        sorting_algorithm = bubble_sort
-                        algorithm_name = "Bubble Sort"
+                        sort_algo = bubble_sort
+                        algo_name = "Bubble Sort"
                     elif event.key == pygame.K_i:
-                        sorting_algorithm = insertion_sort
-                        algorithm_name = "Insertion Sort"
+                        sort_algo = insertion_sort
+                        algo_name = "Insertion Sort"
                     elif event.key == pygame.K_s:
-                        sorting_algorithm = selection_sort
-                        algorithm_name = "Selection Sort"
-                    elif event.key == pygame.K_q:
-                        sorting_algorithm = quick_sort
-                        algorithm_name = "Quick Sort"
+                        sort_algo = selection_sort
+                        algo_name = "Selection Sort"
                     elif event.key == pygame.K_m:
-                        sorting_algorithm = merge_sort
-                        algorithm_name = "Merge Sort"
-
-                    # Redraw screen to update algorithm name
-                    draw_screen(vis_settings, algorithm_name, ascending)
+                        sort_algo = merge_sort
+                        algo_name = "Merge Sort"
+                    elif event.key == pygame.K_q:
+                        sort_algo = quick_sort
+                        algo_name = "Quick Sort"
 
     pygame.quit()
-
 
 if __name__ == "__main__":
     main()
