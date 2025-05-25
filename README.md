@@ -1,23 +1,29 @@
 # 🎨 Sortify - Sorting Algorithm Visualizer
 
-**Sortify** is a fun and educational Python application that brings sorting algorithms to life through real-time animations. Perfect for students, educators, and curious minds who want to **see how sorting works step-by-step**.
+**Sortify** is an educational and interactive Python app that **brings sorting algorithms to life** through real-time animations. Ideal for students, educators, and curious minds who want to **see how sorting works step-by-step**, including **execution time**, **time complexity**, and **space complexity**.
 
 ---
 
 ## ✨ Features
 
-✅ Visualizes 5 classic sorting algorithms:
-- 🔁 Bubble Sort  
-- 📥 Insertion Sort  
-- 🔽 Selection Sort  
-- ⚡ Quick Sort  
-- 🧬 Merge Sort  
+✅ Visualizes **5 classic sorting algorithms**:
+- 🔁 **Bubble Sort**  
+- 📥 **Insertion Sort**  
+- 🔽 **Selection Sort**  
+- ⚡ **Quick Sort**  
+- 🧬 **Merge Sort**
 
-✅ Interactive & beginner-friendly:
+✅ **Real-time visual feedback**:
+- Color-coded bars show comparisons and swaps  
+- Numbers displayed above each bar  
+- Animated transitions  
+- Displays execution time in seconds after sorting  
+- Shows Time and Space Complexity dynamically
+
+✅ **Interactive and beginner-friendly**:
 - Sort in ascending 🔼 or descending 🔽 order  
-- Watch comparisons and swaps with color-coded bars  
-- Adjust array size and value ranges  
-- Keyboard-controlled interface  
+- Instantly reset array with new random values  
+- Keyboard-controlled interface for easy use
 
 ---
 
@@ -25,10 +31,10 @@
 
 ### 📦 Installation
 
-1. **Clone the repo**:
+1. **Clone the repository**:
    ```bash
-   git clone https://github.com/jaweriafayyaz/sortify.git
-   cd sortify
+   git clone https://github.com/jaweriafayyaz/Sortify.git
+   cd Sortify
    ```
 
 2. **Install dependencies**:
@@ -60,29 +66,59 @@
 
 ---
 
+## 📊 Sorting Metrics
+
+After each sort completes, the following metrics are displayed:
+- 🕒 **Execution Time** (in seconds)
+- 📈 **Time Complexity**
+- 💾 **Space Complexity**
+
+---
+
+## 🧠 Algorithm Summary
+
+| Algorithm       | Best Case     | Worst Case    | Space Complexity |
+|----------------|---------------|---------------|------------------|
+| Bubble Sort     | O(n)          | O(n²)         | O(1)             |
+| Insertion Sort  | O(n)          | O(n²)         | O(1)             |
+| Selection Sort  | O(n²)         | O(n²)         | O(1)             |
+| Quick Sort      | O(n log n)    | O(n²)         | O(log n)         |
+| Merge Sort      | O(n log n)    | O(n log n)    | O(n)             |
+
+---
+
 ## 🎓 Educational Value
 
-Sortify helps learners understand sorting algorithms through visual feedback. It's a great tool to:
-- Learn sorting logic intuitively
-- Observe algorithm behavior on different inputs
-- Teach others with engaging visuals
+Sortify helps learners understand sorting algorithms visually and intuitively. It's ideal for:
+- CS students learning algorithms
+- Instructors demonstrating logic step-by-step
+- Coding bootcamps & workshops
+- Self-learners exploring algorithm behavior
 
 ---
 
 ## 🤝 Contributions
 
-Pull requests and feature suggestions are welcome!  
+Contributions are welcome!  
 To contribute:
 1. Fork the repository  
 2. Create a new branch  
 3. Commit your changes  
-4. Submit a PR 🚀  
+4. Submit a pull request 🚀
 
 ---
 
 ## 💌 Feedback
 
-If you enjoyed using Sortify or found it helpful, feel free to give it a ⭐ on GitHub and share your thoughts!
+If you enjoyed using Sortify or found it helpful, please ⭐ star the repo and share it with others!
 
 ---
 
+## 👩‍💻 Author
+
+**Jaweria Fayyaz**  
+📧 Email: [jaweriafayyaz474@gmail.com](mailto:jaweriafayyaz474@gmail.com)  
+🐙 GitHub: [github.com/jaweriafayyaz](https://github.com/jaweriafayyaz)
+---
+
+🎉 **Happy Sorting!**
